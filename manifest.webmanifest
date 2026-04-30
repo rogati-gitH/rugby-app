@@ -1,0 +1,19 @@
+{
+  "name": "Control de Partido Rugby",
+  "short_name": "Rugby Clock",
+  "description": "Cronómetro, eventos, historial y PDF para partidos de rugby.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#063425",
+  "theme_color": "#0b4f3a",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

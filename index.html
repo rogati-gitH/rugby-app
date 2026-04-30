@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b4f3a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Rugby Clock" />
+    <title>Control de Partido Rugby</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/icon.svg" />
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="match-header" aria-label="Cabecera del partido">
+        <section class="score-row">
+          <div class="curupa-crest" aria-label="Escudo CURUPA">
+            <img src="assets/club-curupayti-logo.png" alt="Escudo CURUPA" />
+            <span>CURUPA</span>
+          </div>
+
+          <div class="scoreboard" aria-live="polite">
+            <span id="scoreCurupaName">CURUPA</span>
+            <strong id="scoreCurupa">0</strong>
+            <span class="score-separator">-</span>
+            <strong id="scoreRival">0</strong>
+            <span id="scoreRivalName">RIVAL</span>
+          </div>
+
+          <label class="crest-box rival-crest" aria-label="Cargar escudo rival">
+            <input id="rivalCrestInput" type="file" accept="image/jpeg,image/gif,image/png,image/webp" />
+            <img id="rivalCrestPreview" src="" alt="Escudo rival" />
+            <span>RIVAL</span>
+          </label>
+        </section>
+
+        <section class="team-row" aria-label="Equipos">
+          <div class="team-field team-field-curupa">
+            <label for="curupaCode">EQUIPO</label>
+            <input
+              id="curupaCode"
+              type="text"
+              inputmode="text"
+              maxlength="4"
+              autocomplete="off"
+              aria-label="Código CURUPA de 4 caracteres"
+              placeholder="CAT"
+            />
+          </div>
+          <div class="team-field team-field-rival">
+            <label for="rivalName">Rival</label>
+            <input id="rivalName" type="text" autocomplete="off" aria-label="Nombre del equipo rival" placeholder="RIVAL" />
+          </div>
+        </section>
+      </header>
+
+      <section class="clock-panel" aria-label="Cronómetro">
+        <div class="period-chip">Período <span id="periodLabel">1</span></div>
+        <time id="clockDisplay" datetime="PT0M0S">00:00</time>
+        <p id="timerStatus" class="timer-status" aria-live="polite">Listo para iniciar</p>
+      </section>
+
+      <section class="control-grid" aria-label="Controles principales">
+        <button id="startPeriodBtn" class="primary-action" type="button">Inicio de período</button>
+        <button id="refereePauseBtn" class="pause-action" type="button">Pausa referee</button>
+        <button id="eventBtn" class="event-action" type="button">Evento del partido</button>
+        <button id="endPeriodBtn" class="danger-action" type="button">Fin de período</button>
+        <button id="medicalPauseBtn" class="medical-action" type="button">Atención médica</button>
+        <button id="historyBtn" class="history-fab" type="button">Historial</button>
+      </section>
+    </main>
+
+    <nav class="bottom-actions" aria-label="Accesos rápidos">
+      <button id="newMatchBottomBtn" class="text-fab" type="button" disabled>Nuevo partido</button>
+    </nav>
+
+    <aside id="textNotice" class="text-notice" aria-live="polite" hidden>
+      <strong>Archivo de texto generado</strong>
+      <div class="text-notice-actions">
+        <a id="textOpenLink" href="#" target="_blank" rel="noopener">Abrir TXT</a>
+        <a id="textDownloadLink" href="#" download>Descargar TXT</a>
+      </div>
+      <button id="closeTextNoticeBtn" type="button" aria-label="Cerrar aviso de texto">×</button>
+    </aside>
+
+    <div id="eventModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle" hidden>
+      <div class="modal-panel">
+        <div class="modal-header">
+          <h2 id="eventModalTitle">Evento del partido</h2>
+          <button class="icon-button" type="button" data-close-modal="eventModal" aria-label="Cerrar evento">×</button>
+        </div>
+
+        <form id="eventForm" class="event-form">
+          <fieldset>
+            <legend>Equipo</legend>
+            <div class="segmented-control">
+              <label>
+                <input type="radio" name="team" value="CURUPA" checked />
+                <span>CURUPA</span>
+              </label>
+              <label>
+                <input id="rivalTeamOption" type="radio" name="team" value="RIVAL" />
+                <span id="rivalTeamOptionLabel">RIVAL</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="event-meta-grid">
+            <label class="form-field" for="eventPeriod">
+              Período
+              <select id="eventPeriod" name="eventPeriod" required>
+                <option value="1">1</option>
+                <option value="2">2</option>
+              </select>
+            </label>
+
+            <label class="form-field" for="eventTime">
+              Tiempo
+              <input id="eventTime" name="eventTime" type="text" inputmode="numeric" placeholder="MM:SS" pattern="[0-9]{2}:[0-9]{2}" required />
+            </label>
+          </div>
+
+          <label class="form-field" for="eventType">
+            Evento
+            <select id="eventType" name="eventType" required>
+              <option value="try">Try (5)</option>
+              <option value="conversion">Conversión (2)</option>
+              <option value="penal">Penal (3)</option>
+              <option value="drop">Drop (3)</option>
+              <option value="tryPenal">Try Penal (7)</option>
+            </select>
+          </label>
+
+          <label class="form-field" for="playerName">
+            Nombre del jugador
+            <input id="playerName" name="playerName" type="text" autocomplete="off" placeholder="Jugador" />
+          </label>
+
+          <button class="save-action" type="submit">Guardar</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="historyModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle" hidden>
+      <div class="modal-panel history-panel">
+        <div class="modal-header">
+          <h2 id="historyModalTitle">Historial</h2>
+          <button class="icon-button" type="button" data-close-modal="historyModal" aria-label="Cerrar historial">×</button>
+        </div>
+
+        <div class="history-scroll">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Per</th>
+                <th>Tiempo</th>
+                <th>Equipo</th>
+                <th>Jugador</th>
+                <th>Evento</th>
+                <th>Valor</th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+          <p id="emptyHistory" class="empty-state">Sin eventos registrados</p>
+        </div>
+
+        <section class="summary-section" aria-label="Resumen estadístico">
+          <h3>Resumen</h3>
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>CURUPA</th>
+                <th>RIVAL</th>
+              </tr>
+            </thead>
+            <tbody id="summaryBody"></tbody>
+          </table>
+        </section>
+
+        <div class="history-actions">
+          <button id="downloadTextBtn" class="secondary-action" type="button">Generar TXT</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

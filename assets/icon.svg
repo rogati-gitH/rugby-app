@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Rugby Clock">
+  <rect width="512" height="512" rx="96" fill="#0b4f3a"/>
+  <path d="M114 314c66 86 184 96 284 30 20-100-38-202-138-238-94 24-158 104-146 208Z" fill="#f7fbf6"/>
+  <path d="M139 297c56 62 146 72 230 22 10-80-34-158-111-187-75 23-125 86-119 165Z" fill="#14664c"/>
+  <path d="M172 282c48-58 97-98 162-123" fill="none" stroke="#f7fbf6" stroke-width="18" stroke-linecap="round"/>
+  <path d="M223 239l48 45M254 214l48 45M193 268l48 45" fill="none" stroke="#f7fbf6" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="210" fill="none" stroke="#f2b84b" stroke-width="18"/>
+</svg>
