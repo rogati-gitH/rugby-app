@@ -473,13 +473,17 @@ function getTextReport() {
   const rivalName = getRivalName();
   const score = getScore();
   const summary = getSummary();
+  const colWidth = 11;
+  const formatCol = (value) => String(value ?? "").slice(0, colWidth).padEnd(colWidth, " ");
+  const joinCols = (cols) => cols.map((col) => formatCol(col)).join("");
+
   const lines = [
     "Registro de partido",
     `Fecha: ${date}`,
     `Resultado final: CURUPA ${score.curupa} - ${score.rival} ${rivalName}`,
     "",
     "Historial completo",
-    "PER | TIEMPO | EQUIPO | JUGADOR | EVENTO | VALOR",
+    joinCols(["PER", "TIEMPO", "EQUIPO", "JUGADOR", "EVENTO", "VALOR"]),
   ];
 
   if (state.events.length === 0) {
@@ -487,16 +491,21 @@ function getTextReport() {
   } else {
     state.events.forEach((event) => {
       lines.push(
-        `${event.period} | ${event.time} | ${event.team === "CURUPA" ? "CURUPA" : rivalName} | ${event.player || "-"} | ${
-          event.eventLabel
-        } | ${event.value}`
+        joinCols([
+          event.period,
+          event.time,
+          event.team === "CURUPA" ? "CURUPA" : rivalName,
+          event.player || "-",
+          event.eventLabel,
+          event.value,
+        ])
       );
     });
   }
 
-  lines.push("", "Resumen", "EVENTO | CURUPA | RIVAL");
+  lines.push("", "Resumen", joinCols(["EVENTO", "CURUPA", "RIVAL"]));
   SUMMARY_ROWS.forEach((eventKey) => {
-    lines.push(`${EVENT_TYPES[eventKey].summary} | ${summary[eventKey].CURUPA} | ${summary[eventKey].RIVAL}`);
+    lines.push(joinCols([EVENT_TYPES[eventKey].summary, summary[eventKey].CURUPA, summary[eventKey].RIVAL]));
   });
 
   return `${lines.join("\n")}\n`;
