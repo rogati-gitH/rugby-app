@@ -1,7 +1,7 @@
 {
   "name": "Control de Partido Rugby",
   "short_name": "Rugby Clock",
-  "description": "Cronómetro, eventos, historial y PDF para partidos de rugby.",
+  "description": "Cronómetro, eventos, historial y TXT para partidos de rugby.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
