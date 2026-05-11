@@ -18,6 +18,7 @@ const state = {
   elapsedSeconds: 0,
   timerId: null,
   isRunning: false,
+  periodStarted: false,
   pauseReason: null,
   matchFinished: false,
   events: [],
@@ -127,6 +128,7 @@ function persistState() {
   const snapshot = {
     period: state.period,
     elapsedSeconds: state.elapsedSeconds,
+    periodStarted: state.periodStarted,
     pauseReason: state.pauseReason,
     matchFinished: state.matchFinished,
     events: state.events,
@@ -147,6 +149,7 @@ function restoreState() {
 
     state.period = saved.period === 2 ? 2 : 1;
     state.elapsedSeconds = Number.isFinite(saved.elapsedSeconds) ? saved.elapsedSeconds : 0;
+    state.periodStarted = Boolean(saved.periodStarted) || state.elapsedSeconds > 0;
     state.pauseReason = saved.pauseReason || null;
     state.matchFinished = Boolean(saved.matchFinished);
     state.events = Array.isArray(saved.events) ? saved.events : [];
@@ -250,6 +253,7 @@ function renderControls() {
   dom.refereePauseBtn.disabled = state.matchFinished;
   dom.medicalPauseBtn.disabled = state.matchFinished;
   dom.eventBtn.disabled = state.matchFinished;
+  dom.endPeriodBtn.disabled = state.matchFinished;
   dom.endPeriodBtn.textContent = state.period === 1 ? "Fin de período" : "Fin de partido";
   dom.newMatchBottomBtn.disabled = !state.matchFinished;
 }
@@ -303,6 +307,7 @@ function startTimer() {
     return;
   }
 
+  state.periodStarted = true;
   state.pauseReason = null;
 
   if (!state.timerId) {
@@ -322,7 +327,13 @@ function togglePause(reason) {
 
   if (state.pauseReason === reason) {
     state.pauseReason = null;
-    startTimer();
+    if (state.periodStarted) {
+      startTimer();
+    } else {
+      setStatus("Listo para iniciar");
+      persistState();
+      render();
+    }
     return;
   }
 
@@ -334,12 +345,17 @@ function togglePause(reason) {
 }
 
 function finishPeriod() {
+  if (state.matchFinished) {
+    return;
+  }
+
   stopTimer();
   state.pauseReason = null;
 
   if (state.period === 1) {
     state.period = 2;
     state.elapsedSeconds = 0;
+    state.periodStarted = false;
     setStatus("Período 2 listo para iniciar");
     persistState();
     render();
@@ -347,6 +363,7 @@ function finishPeriod() {
   }
 
   state.matchFinished = true;
+  state.periodStarted = false;
   setStatus("Partido finalizado. TXT generado.");
   persistState();
   render();
@@ -398,7 +415,8 @@ function normalizeEventTime(value) {
 
   const minutes = Number(match[1]);
   const seconds = Number(match[2]);
-  if (!Number.isInteger(minutes) || !Number.isInteger(seconds) || seconds > 59) {
+  const totalSeconds = minutes * 60 + seconds;
+  if (!Number.isInteger(minutes) || !Number.isInteger(seconds) || seconds > 59 || totalSeconds > PERIOD_SECONDS) {
     return null;
   }
 
@@ -414,8 +432,8 @@ function saveEvent(formData) {
   const time = normalizeEventTime(formData.get("eventTime"));
 
   if (!eventType || !time) {
-    alert("Revisá el tiempo. Usá formato MM:SS, por ejemplo 03:25.");
-    return;
+    alert("Revisá el tiempo. Usá formato MM:SS, entre 00:00 y 35:00.");
+    return false;
   }
 
   const eventPayload = {
@@ -441,6 +459,7 @@ function saveEvent(formData) {
 
   persistState();
   render();
+  return true;
 }
 
 function deleteEvent(eventId) {
@@ -563,6 +582,7 @@ function resetMatch() {
   stopTimer();
   state.period = 1;
   state.elapsedSeconds = 0;
+  state.periodStarted = false;
   state.pauseReason = null;
   state.matchFinished = false;
   state.events = [];
@@ -614,7 +634,10 @@ function bindEvents() {
 
   dom.eventForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    saveEvent(new FormData(dom.eventForm));
+    const saved = saveEvent(new FormData(dom.eventForm));
+    if (!saved) {
+      return;
+    }
     dom.eventForm.reset();
     dom.eventForm.elements.team.value = "CURUPA";
     editingEventId = null;
