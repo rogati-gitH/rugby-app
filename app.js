@@ -8,6 +8,12 @@ const EVENT_TYPES = {
   drop: { label: "Drop", points: 3, summary: "DROP" },
   tryPenal: { label: "Try Penal", points: 7, summary: "TRYPENAL" },
 };
+const CARD_TYPES = {
+  yellow: "Amarilla",
+  red20: "Roja 20 min",
+  red: "Roja",
+  blue: "Azul",
+};
 
 const SUMMARY_ROWS = ["try", "conversion", "penal", "drop", "tryPenal"];
 let activeTextUrl = "";
@@ -44,7 +50,7 @@ const dom = {
   timerStatus: document.getElementById("timerStatus"),
   startPeriodBtn: document.getElementById("startPeriodBtn"),
   refereePauseBtn: document.getElementById("refereePauseBtn"),
-  medicalPauseBtn: document.getElementById("medicalPauseBtn"),
+  cardsBtn: document.getElementById("cardsBtn"),
   endPeriodBtn: document.getElementById("endPeriodBtn"),
   eventBtn: document.getElementById("eventBtn"),
   historyBtn: document.getElementById("historyBtn"),
@@ -54,12 +60,19 @@ const dom = {
   textDownloadLink: document.getElementById("textDownloadLink"),
   closeTextNoticeBtn: document.getElementById("closeTextNoticeBtn"),
   eventModal: document.getElementById("eventModal"),
+  cardsModal: document.getElementById("cardsModal"),
   historyModal: document.getElementById("historyModal"),
   eventForm: document.getElementById("eventForm"),
+  cardsForm: document.getElementById("cardsForm"),
   eventType: document.getElementById("eventType"),
   eventPeriod: document.getElementById("eventPeriod"),
   eventTime: document.getElementById("eventTime"),
   playerName: document.getElementById("playerName"),
+  cardPeriod: document.getElementById("cardPeriod"),
+  cardTime: document.getElementById("cardTime"),
+  cardType: document.getElementById("cardType"),
+  cardPlayerName: document.getElementById("cardPlayerName"),
+  cardsRivalTeamOptionLabel: document.getElementById("cardsRivalTeamOptionLabel"),
   rivalTeamOptionLabel: document.getElementById("rivalTeamOptionLabel"),
   historyBody: document.getElementById("historyBody"),
   emptyHistory: document.getElementById("emptyHistory"),
@@ -177,6 +190,7 @@ function renderScore() {
   dom.scoreCurupaName.textContent = state.curupaCode ? `CURUPA ${state.curupaCode}` : "CURUPA";
   dom.scoreRivalName.textContent = getRivalName();
   dom.rivalTeamOptionLabel.textContent = getRivalName();
+  dom.cardsRivalTeamOptionLabel.textContent = getRivalName();
 }
 
 function renderHistory() {
@@ -246,13 +260,10 @@ function renderSummary() {
 
 function renderControls() {
   const pausedByReferee = state.pauseReason === "referee";
-  const pausedByMedical = state.pauseReason === "medical";
-
   dom.refereePauseBtn.classList.toggle("is-active", pausedByReferee);
-  dom.medicalPauseBtn.classList.toggle("is-active", pausedByMedical);
   dom.startPeriodBtn.disabled = state.matchFinished || state.elapsedSeconds >= PERIOD_SECONDS;
   dom.refereePauseBtn.disabled = state.matchFinished;
-  dom.medicalPauseBtn.disabled = state.matchFinished;
+  dom.cardsBtn.disabled = state.matchFinished;
   dom.eventBtn.disabled = state.matchFinished;
   dom.endPeriodBtn.textContent = state.period === 1 ? "Fin de período" : "Fin de partido";
   dom.newMatchBottomBtn.disabled = !state.matchFinished;
@@ -341,7 +352,7 @@ function togglePause(reason) {
 
   stopTimer();
   state.pauseReason = reason;
-  setStatus(reason === "referee" ? "Pausa referee activa" : "Atención médica activa");
+  setStatus("Pausa referee activa");
   persistState();
   render();
 }
@@ -453,6 +464,42 @@ function saveEvent(formData) {
   } else {
     state.events.push(eventPayload);
   }
+
+  persistState();
+  render();
+}
+
+function prepareCardsEvent() {
+  dom.cardsForm.reset();
+  dom.cardsForm.elements.team.value = "CURUPA";
+  dom.cardPeriod.value = String(state.period);
+  dom.cardTime.value = formatTime(state.elapsedSeconds);
+  openModal(dom.cardsModal);
+}
+
+function saveCardEvent(formData) {
+  const cardType = formData.get("cardType");
+  const team = formData.get("team") === "RIVAL" ? "RIVAL" : "CURUPA";
+  const period = formData.get("cardPeriod") === "2" ? 2 : 1;
+  const time = normalizeEventTime(formData.get("cardTime"));
+  const player = String(formData.get("cardPlayerName") || "").trim();
+  const cardLabel = CARD_TYPES[cardType];
+
+  if (!cardLabel || !time) {
+    alert("Revisá el tiempo. Usá formato MM:SS, por ejemplo 03:25.");
+    return;
+  }
+
+  state.events.push({
+    id: createEventId(),
+    period,
+    time,
+    team,
+    eventKey: "card",
+    eventLabel: `Tarjeta ${cardLabel}`,
+    value: 0,
+    player,
+  });
 
   persistState();
   render();
@@ -592,7 +639,7 @@ function bindEvents() {
   dom.startPeriodBtn.addEventListener("click", startTimer);
   dom.endPeriodBtn.addEventListener("click", finishPeriod);
   dom.refereePauseBtn.addEventListener("click", () => togglePause("referee"));
-  dom.medicalPauseBtn.addEventListener("click", () => togglePause("medical"));
+  dom.cardsBtn.addEventListener("click", prepareCardsEvent);
   dom.eventBtn.addEventListener("click", prepareNewEvent);
   dom.historyBtn.addEventListener("click", () => openModal(dom.historyModal));
   dom.downloadTextBtn.addEventListener("click", generateTextFile);
@@ -639,6 +686,12 @@ function bindEvents() {
     closeModal(dom.eventModal);
   });
 
+  dom.cardsForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    saveCardEvent(new FormData(dom.cardsForm));
+    closeModal(dom.cardsModal);
+  });
+
   document.addEventListener("click", (event) => {
     const closeTarget = event.target.closest("[data-close-modal]");
     if (closeTarget) {
@@ -649,11 +702,12 @@ function bindEvents() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeModal(dom.eventModal);
+      closeModal(dom.cardsModal);
       closeModal(dom.historyModal);
     }
   });
 
-  [dom.eventModal, dom.historyModal].forEach((modal) => {
+  [dom.eventModal, dom.cardsModal, dom.historyModal].forEach((modal) => {
     modal.addEventListener("click", (event) => {
       if (event.target === modal) {
         closeModal(modal);
