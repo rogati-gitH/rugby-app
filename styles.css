@@ -296,11 +296,11 @@ button {
 }
 
 .primary-action {
-  background: #17845f;
+  background: #0d8a4f;
 }
 
 .pause-action {
-  background: #6a5942;
+  background: #101010;
 }
 
 .event-action {
@@ -308,11 +308,13 @@ button {
 }
 
 .danger-action {
-  background: var(--red);
+  background: #c43a3a;
+  color: var(--gold);
 }
 
 .medical-action {
-  background: #7a3945;
+  background: var(--gold);
+  color: #000000;
 }
 
 .pause-action.is-active {

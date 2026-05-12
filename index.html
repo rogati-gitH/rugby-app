@@ -69,7 +69,7 @@
         <button id="refereePauseBtn" class="pause-action" type="button">Pausa referee</button>
         <button id="eventBtn" class="event-action" type="button">Evento del partido</button>
         <button id="endPeriodBtn" class="danger-action" type="button">Fin de período</button>
-        <button id="medicalPauseBtn" class="medical-action" type="button">Atención médica</button>
+        <button id="cardsBtn" class="medical-action" type="button">Tarjetas</button>
         <button id="historyBtn" class="history-fab" type="button">Historial</button>
       </section>
     </main>
@@ -138,6 +138,63 @@
           <label class="form-field" for="playerName">
             Nombre del jugador
             <input id="playerName" name="playerName" type="text" autocomplete="off" placeholder="Jugador" />
+          </label>
+
+          <button class="save-action" type="submit">Guardar</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="cardsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cardsModalTitle" hidden>
+      <div class="modal-panel">
+        <div class="modal-header">
+          <h2 id="cardsModalTitle">Tarjetas</h2>
+          <button class="icon-button" type="button" data-close-modal="cardsModal" aria-label="Cerrar tarjetas">×</button>
+        </div>
+
+        <form id="cardsForm" class="event-form">
+          <fieldset>
+            <legend>Equipo</legend>
+            <div class="segmented-control">
+              <label>
+                <input type="radio" name="team" value="CURUPA" checked />
+                <span>CURUPA</span>
+              </label>
+              <label>
+                <input type="radio" name="team" value="RIVAL" />
+                <span id="cardsRivalTeamOptionLabel">RIVAL</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="event-meta-grid">
+            <label class="form-field" for="cardPeriod">
+              Período
+              <select id="cardPeriod" name="cardPeriod" required>
+                <option value="1">1</option>
+                <option value="2">2</option>
+              </select>
+            </label>
+
+            <label class="form-field" for="cardTime">
+              Tiempo
+              <input id="cardTime" name="cardTime" type="text" inputmode="numeric" placeholder="MM:SS" pattern="[0-9]{2}:[0-9]{2}" required />
+            </label>
+          </div>
+
+          <label class="form-field" for="cardType">
+            Tarjeta
+            <select id="cardType" name="cardType" required>
+              <option value="yellow">Amarilla</option>
+              <option value="red20">Roja 20 min</option>
+              <option value="red">Roja</option>
+              <option value="blue">Azul</option>
+            </select>
+          </label>
+
+          <label class="form-field" for="cardPlayerName">
+            Nombre del jugador
+            <input id="cardPlayerName" name="cardPlayerName" type="text" autocomplete="off" placeholder="Jugador" />
           </label>
 
           <button class="save-action" type="submit">Guardar</button>

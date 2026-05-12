@@ -1,4 +1,4 @@
-const CACHE_NAME = "rugby-clock-pwa-v8";
+const CACHE_NAME = "rugby-clock-pwa-v7";
 const APP_ASSETS = [
   "./",
   "./index.html",
